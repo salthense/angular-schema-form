@@ -2043,28 +2043,31 @@ describe('directive',function(){
   });
 
 
-  {
-    name: 'radios',
-    property: {
-      type: 'boolean',
-    },
-    form: {
-      key: ["field"],
-      type: "radios",
-      titleMap: [
-        {
-          "value": false,
-          "name": "No way"
-        },
-        {
-          "value": true,
-          "name": "OK"
-        }
-      ]
-    }
-  },
+
 
   it('should not add "has-success" class to radios field if a correct value is entered, but disableSuccessState is set on form', function () {
+
+    var field = {
+      name: 'radios',
+      property: {
+        type: 'boolean',
+      },
+      form: {
+        key: ["field"],
+        type: "radios",
+        titleMap: [
+          {
+            "value": false,
+            "name": "No way"
+          },
+          {
+            "value": true,
+            "name": "OK"
+          }
+        ]
+      }
+    };
+
     inject(function($compile, $rootScope){
       var scope = $rootScope.$new();
       scope.model = {}
@@ -2091,6 +2094,28 @@ describe('directive',function(){
   });
 
   it('should not add "has-error" class to radios field if invalid value is entered, but disableErrorState is set on form', function () {
+
+    var field = {
+      name: 'radios',
+      property: {
+        type: 'boolean',
+      },
+      form: {
+        key: ["field"],
+        type: "radios",
+        titleMap: [
+          {
+            "value": false,
+            "name": "No way"
+          },
+          {
+            "value": true,
+            "name": "OK"
+          }
+        ]
+      }
+    };
+    
     inject(function($compile, $rootScope){
       var scope = $rootScope.$new();
       scope.model = {
