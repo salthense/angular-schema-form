@@ -625,7 +625,7 @@ General options most field types can handle:
   description: "Street name", // A description, taken from schema if available, can be HTML
   validationMessage: "Oh noes, please write a proper address",  // A custom validation error message
   onChange: "valueChanged(form.key,modelValue)", // onChange event handler, expression or function
-  formula: "model.year;model.year - 1", // onChange event handler, expression or function
+  formula: "model.year;model.year - 1", // fields to be watched for changes and expression
   feedback: false,             // Inline feedback icons
   disableSuccessState: false,  // Set true to NOT apply 'has-success' class to a field that was validated successfully
   disableErrorState: false,    // Set true to NOT apply 'has-error' class to a field that failed validation
@@ -684,6 +684,7 @@ $scope.form = [
     formula: "model.year;model.year - 1"
   }
 ]
+```
 
 ### Validation Messages
 The validation message can be a string, an object with error codes as key and messages as values
