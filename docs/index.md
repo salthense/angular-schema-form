@@ -18,6 +18,7 @@ Documentation
 1. [Overriding field types and order](#overriding-field-types-and-order)
 1. [Standard Options](#standard-options)
     1. [onChange](#onchange)
+    1. [formula](#formula)
     1. [Validation Messages](#validation-messages)
     1. [Inline feedback icons](#inline-feedback-icons)
     1. [ngModelOptions](#ngmodeloptions)
@@ -624,6 +625,7 @@ General options most field types can handle:
   description: "Street name", // A description, taken from schema if available, can be HTML
   validationMessage: "Oh noes, please write a proper address",  // A custom validation error message
   onChange: "valueChanged(form.key,modelValue)", // onChange event handler, expression or function
+  formula: "model.year;model.year - 1", // onChange event handler, expression or function
   feedback: false,             // Inline feedback icons
   disableSuccessState: false,  // Set true to NOT apply 'has-success' class to a field that was validated successfully
   disableErrorState: false,    // Set true to NOT apply 'has-error' class to a field that failed validation
@@ -662,6 +664,26 @@ $scope.form = [
   }
 ];
 ```
+
+### formula
+The ```formula``` option can be used with most fields and its value consists of
+two parts: The fields to be watched for changes and an angular expression. This
+two parts are separated by a semicolon (;). The fields to be watched are
+separated by commas (,). The expression is evaluated every time one of the
+watched fields changes. The result of this evaluation is set as the value of
+the field which contains the formula.
+
+ex.
+```javascript
+$scope.form = [
+  {
+    key: "year"
+  },
+  {
+    key: "lastYear",
+    formula: "model.year;model.year - 1"
+  }
+]
 
 ### Validation Messages
 The validation message can be a string, an object with error codes as key and messages as values
