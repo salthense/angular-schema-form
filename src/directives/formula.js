@@ -1,9 +1,11 @@
+window.formulaFunctions = {};
+
 /**
  * Takes the form definition as argument.
  * Evaluates the expression passed as "formula" and sets it as the new value of
  * the underlying model property.
  */
-angular.module('schemaForm').directive('sfFormula', function() {
+angular.module('schemaForm').directive('sfFormula', ['$window', function($window) {
   return {
     require: 'ngModel',
     restrict: 'AC',
@@ -17,6 +19,8 @@ angular.module('schemaForm').directive('sfFormula', function() {
           var formulaParts = form.formula.split(';');
           var variablesToWatch = formulaParts[0].split(',');
           var formulaExpression = formulaParts[1];
+
+          scope.formulaFunctions = $window.formulaFunctions;
 
           var watchVariable = function (variable) {
             scope.$watch(variable, function() {
@@ -32,4 +36,4 @@ angular.module('schemaForm').directive('sfFormula', function() {
       }
     }
   };
-});
+}]);
