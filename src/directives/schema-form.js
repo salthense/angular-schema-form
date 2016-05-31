@@ -3,6 +3,8 @@ FIXME: real documentation
 <form sf-form="form"  sf-schema="schema" sf-decorator="foobar"></form>
 */
 
+formCache = {};
+
 angular.module('schemaForm')
        .directive('sfSchema',
 ['$compile', '$http', '$templateCache', '$q','schemaForm', 'schemaFormDecorators', 'sfSelect', 'sfPath', 'sfBuilder',
@@ -65,8 +67,23 @@ angular.module('schemaForm')
 
         // Common renderer function, can either be triggered by a watch or by an event.
         var render = function(schema, form) {
+          if (form[0] == '*') {
+            return;
+          }
+
           var asyncTemplates = [];
-          var merged = schemaForm.merge(schema, form, ignore, scope.options, undefined, asyncTemplates);
+          var merged;
+
+          if (!formCache[schema.title]) {
+            if (localStorage.getItem('form-' + schema.title)) {
+              formCache[schema.title] = JSON.parse(localStorage.getItem('form-' + schema.title));
+            } else {
+              formCache[schema.title] = schemaForm.merge(schema, form, ignore, scope.options, undefined, asyncTemplates);
+              localStorage.setItem('form-' + schema.title, JSON.stringify(formCache[schema.title]));
+            }
+          }
+
+          merged = formCache[schema.title];
 
           if (asyncTemplates.length > 0) {
             // Pre load all async templates and put them on the form for the builder to use.

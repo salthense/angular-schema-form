@@ -3,7 +3,7 @@ angular.module('schemaForm').directive('sfMatrix', ['sfSelect', 'sfPath', 'schem
     return {
       scope: false,
       link: function(scope, element, attrs, sfSchema) {
-        scope.matrixElements = scope.$eval(attrs.sfMatrix);
+        scope.matrixElements = scope.$eval(attrs.sfMatrix) || [];
         scope.matrixColumns = scope.form.schema.items.properties.column.enum;
         scope.matrixRows = scope.form.schema.items.properties.row.enum;
         scope.matrixMap = {};
