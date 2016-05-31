@@ -304,6 +304,31 @@ angular.module('schemaForm').provider('sfBuilder', ['sfPathProvider', function(s
         args.fieldFrag.querySelector('input').setAttribute('uib-typeahead', 'value for value in options.typeahead(schema, form, $viewValue)');
       }
     },
+    addon: function(args) {
+      if (args.form.addon) {
+        var input = args.fieldFrag.querySelector('input');
+        if (!input) {
+          return;
+        }
+
+        var inputGroup = document.createElement('div');
+        var addon = document.createElement('div');
+
+        inputGroup.setAttribute('class', 'input-group');
+        addon.setAttribute('class', 'input-group-addon');
+
+        input.parentElement.insertBefore(inputGroup, input);
+        inputGroup.appendChild(input);
+
+        if (args.form.addon.before) {
+          addon.innerHTML = args.form.addon.before;
+          input.parentElement.insertBefore(addon, input);
+        } else if (args.form.addon.after) {
+          addon.innerHTML = args.form.addon.after;
+          input.parentElement.insertBefore(addon, input.nextSibling);
+        }
+      }
+    },
     attributes: function(args) {
       if (args.form.attributes) {
         args.form.attributes.forEach(function(attributeObject) {
