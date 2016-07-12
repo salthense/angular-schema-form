@@ -159,8 +159,13 @@ angular.module('schemaForm').provider('sfBuilder', ['sfPathProvider', function(s
     },
     typeahead: function(args) {
       if (args.form.typeahead) {
-        args.fieldFrag.querySelector('input').setAttribute('uib-typeahead', 'value for value in options.typeahead(schema, form, $viewValue)');
-        args.fieldFrag.querySelector('input').setAttribute("typeahead-min-length", "0");
+        var input = args.fieldFrag.querySelector('input')
+        if (input) {
+          input.setAttribute('uib-typeahead', 'value for value in options.typeahead(schema, form, $viewValue)');
+          input.setAttribute("typeahead-min-length", "0");
+        } else {
+          console.warn('could not find input field for typeahead', args.form);
+        }
       }
     },
     addon: function(args) {
