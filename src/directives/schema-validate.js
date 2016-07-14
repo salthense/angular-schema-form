@@ -155,6 +155,29 @@ angular.module('schemaForm').directive('schemaValidate', ['sfValidator', '$parse
         // Listen to an event so we can validate the input on request
         scope.$on('schemaFormValidate', scope.validateField);
 
+        /* Available statetypes: ['warning']*/
+        scope.setState = function(settings) {
+          var setManual = settings.keys.filter(function(key) {
+            if (form.key.length !== key.length) {
+              return false;
+            }
+
+            for (var i = 0; i < form.key.length; i++) {
+              if (form.key[i] !== key[i]) {
+                return false;
+              }
+            }
+
+            return true;
+          })[0];
+          if (JSON.stringify(setManual) === JSON.stringify(form.key)) {
+            ngModel.$warning = settings.validationType === "warning";
+            ngModel.$setValidity('warningIncomplite', !ngModel.$warning);
+          }
+        };
+
+        scope.$on('schemaFormSetState', function () {scope.setState(arguments[1])});
+
         scope.schemaError = function() {
           return error;
         };
