@@ -256,10 +256,23 @@ angular.module('schemaForm').directive('sfArray', ['sfSelect', 'schemaForm', 'sf
                 // Note that "validateOnRender" option defaults to *not* validate initial form.
                 // so as a default there won't be any error anyway, but if the model is modified
                 // from the outside the error will show even if the field is pristine.
-                return ngModel.$invalid;
+                return ngModel.$invalid && !ngModel.$warning;
               } else {
                 // Don't show errors in pristine forms.
-                return ngModel.$invalid && !ngModel.$pristine;
+                return (ngModel.$invalid && !ngModel.$warning) && !ngModel.$pristine;
+              }
+            };
+
+            scope.hasWarning = function() {
+              if (!scope.options || !scope.options.pristine || scope.options.pristine.errors !== false) {
+                // Show errors in pristine forms. The default.
+                // Note that "validateOnRender" option defaults to *not* validate initial form.
+                // so as a default there won't be any error anyway, but if the model is modified
+                // from the outside the error will show even if the field is pristine.
+                return ngModel.$warning;
+              } else {
+                // Don't show errors in pristine forms.
+                return ngModel.$warning && !ngModel.$pristine;
               }
             };
 

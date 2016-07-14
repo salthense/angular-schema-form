@@ -131,10 +131,26 @@ angular.module('schemaForm').directive('sfField',
                 // Note that "validateOnRender" option defaults to *not* validate initial form.
                 // so as a default there won't be any error anyway, but if the model is modified
                 // from the outside the error will show even if the field is pristine.
-                return scope.ngModel.$invalid;
+                return scope.ngModel.$invalid && !scope.ngModel.$warning;
               } else {
                 // Don't show errors in pristine forms.
-                return scope.ngModel.$invalid && !scope.ngModel.$pristine;
+                return (scope.ngModel.$invalid && !scope.ngModel.$warning) && !scope.ngModel.$pristine;
+              }
+            };
+
+            scope.hasWarning = function() {
+              if (!scope.ngModel) {
+                return false;
+              }
+              if (!scope.options || !scope.options.pristine || scope.options.pristine.errors !== false) {
+                // Show errors in pristine forms. The default.
+                // Note that "validateOnRender" option defaults to *not* validate initial form.
+                // so as a default there won't be any error anyway, but if the model is modified
+                // from the outside the error will show even if the field is pristine.
+                return scope.ngModel.$warning;
+              } else {
+                // Don't show errors in pristine forms.
+                return scope.ngModel.$warning && !scope.ngModel.$pristine;
               }
             };
 

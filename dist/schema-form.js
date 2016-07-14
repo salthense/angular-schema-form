@@ -302,6 +302,7 @@ angular.module('schemaForm').provider('sfBuilder', ['sfPathProvider', function(s
     typeahead: function(args) {
       if (args.form.typeahead) {
         args.fieldFrag.querySelector('input').setAttribute('uib-typeahead', 'value for value in options.typeahead(schema, form, $viewValue)');
+        args.fieldFrag.querySelector('input').setAttribute("typeahead-min-length", "0");
       }
     },
     addon: function(args) {
@@ -1907,10 +1908,23 @@ angular.module('schemaForm').directive('sfArray', ['sfSelect', 'schemaForm', 'sf
                 // Note that "validateOnRender" option defaults to *not* validate initial form.
                 // so as a default there won't be any error anyway, but if the model is modified
                 // from the outside the error will show even if the field is pristine.
-                return ngModel.$invalid;
+                return ngModel.$invalid && !ngModel.$warning;
               } else {
                 // Don't show errors in pristine forms.
-                return ngModel.$invalid && !ngModel.$pristine;
+                return (ngModel.$invalid && !ngModel.$warning) && !ngModel.$pristine;
+              }
+            };
+
+            scope.hasWarning = function() {
+              if (!scope.options || !scope.options.pristine || scope.options.pristine.errors !== false) {
+                // Show errors in pristine forms. The default.
+                // Note that "validateOnRender" option defaults to *not* validate initial form.
+                // so as a default there won't be any error anyway, but if the model is modified
+                // from the outside the error will show even if the field is pristine.
+                return ngModel.$warning;
+              } else {
+                // Don't show errors in pristine forms.
+                return ngModel.$warning && !ngModel.$pristine;
               }
             };
 
@@ -2089,10 +2103,26 @@ angular.module('schemaForm').directive('sfField',
                 // Note that "validateOnRender" option defaults to *not* validate initial form.
                 // so as a default there won't be any error anyway, but if the model is modified
                 // from the outside the error will show even if the field is pristine.
-                return scope.ngModel.$invalid;
+                return scope.ngModel.$invalid && !scope.ngModel.$warning;
               } else {
                 // Don't show errors in pristine forms.
-                return scope.ngModel.$invalid && !scope.ngModel.$pristine;
+                return (scope.ngModel.$invalid && !scope.ngModel.$warning) && !scope.ngModel.$pristine;
+              }
+            };
+
+            scope.hasWarning = function() {
+              if (!scope.ngModel) {
+                return false;
+              }
+              if (!scope.options || !scope.options.pristine || scope.options.pristine.errors !== false) {
+                // Show errors in pristine forms. The default.
+                // Note that "validateOnRender" option defaults to *not* validate initial form.
+                // so as a default there won't be any error anyway, but if the model is modified
+                // from the outside the error will show even if the field is pristine.
+                return scope.ngModel.$warning;
+              } else {
+                // Don't show errors in pristine forms.
+                return scope.ngModel.$warning && !scope.ngModel.$pristine;
               }
             };
 
