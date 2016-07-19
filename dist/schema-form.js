@@ -2706,32 +2706,43 @@ angular.module('schemaForm')
           var asyncTemplates = [];
           var merged;
 
-          if (!formCache[schema.title]) {
-            if (localStorage.getItem('form-' + schema.title)) {
-              formCache[schema.title] = JSON.parse(localStorage.getItem('form-' + schema.title));
+          var localForm = JSON.parse(localStorage.getItem('form-' + schema.title));
+          var localVersion = localStorage.getItem('form-' + schema.title + '-version') || 0;
+
+          var checkForm = function (version) {
+            if (localForm === null || localVersion < version) {
+              return false;
             } else {
-              formCache[schema.title] = schemaForm.merge(schema, form, ignore, scope.options, undefined, asyncTemplates);
-              localStorage.setItem('form-' + schema.title, JSON.stringify(formCache[schema.title]));
+              return true;
             }
-          }
+          };
 
-          merged = formCache[schema.title];
+          scope.options.schemaVersion.then(function (version) {
+            if (!formCache[schema.title]) {
+              if (checkForm(version)) {
+                formCache[schema.title] = localForm;
+              } else {
+                formCache[schema.title] = schemaForm.merge(schema, form, ignore, scope.options, undefined, asyncTemplates);
+                localStorage.setItem('form-' + schema.title, JSON.stringify(formCache[schema.title]));
+                localStorage.setItem('form-' + schema.title + '-version', version);
+              }
+            }
 
-          if (asyncTemplates.length > 0) {
-            // Pre load all async templates and put them on the form for the builder to use.
-            $q.all(asyncTemplates.map(function(form) {
-              return $http.get(form.templateUrl, {cache: $templateCache}).then(function(res) {
-                                  form.template = res.data;
-                                });
-            })).then(function() {
+            merged = formCache[schema.title];
+
+            if (asyncTemplates.length > 0) {
+              // Pre load all async templates and put them on the form for the builder to use.
+              $q.all(asyncTemplates.map(function(form) {
+                return $http.get(form.templateUrl, {cache: $templateCache}).then(function(res) {
+                                    form.template = res.data;
+                                  });
+              })).then(function() {
+                internalRender(schema, form, merged);
+              });
+            } else {
               internalRender(schema, form, merged);
-            });
-
-          } else {
-            internalRender(schema, form, merged);
-          }
-
-
+            }
+          });
         };
 
         var internalRender = function(schema, form, merged) {
