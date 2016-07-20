@@ -1,3 +1,14 @@
+
+IMPORTANT
+=========
+
+**Angular Schema Form is undergoing a refactoring and the "bootstrap decorator", i.e. the part with
+all the HTML has been moved to [github.com/Textalk/angular-schema-form-bootstrap](https://github.com/Textalk/angular-schema-form-bootstrap).**
+
+The documentation below, especially form options is therefore somewhat bootstrap decorator
+specific. The docs is undergoing updating.
+
+
 Documentation
 =============
 
@@ -44,8 +55,13 @@ Documentation
 Basic Usage
 -----------
 
-First, expose your schema, form, and model to the $scope.
-Don't forget to load the `schemaForm` module.
+After installing, load the `schemaForm` module in your module definition.
+
+Then, in your controller, expose your [schema](http://json-schema.org/), 
+form, and [model](https://docs.angularjs.org/guide/databinding) to the $scope.
+Your schema defines your data structure, the form definition
+draws on this definition to define the user interface, and the
+model binds the user input to the controller.
 
 ```javascript
 angular.module('myModule', ['schemaForm'])
@@ -73,7 +89,8 @@ angular.module('myModule', ['schemaForm'])
 }
 ```
 
-Then load them into Schema Form using the `sfSchema`, `sfForm`, and `sfModel` directives.
+Then, in your template, load them into Schema Form using the 
+`sfSchema`, `sfForm`, and `sfModel` directives.
 
 ```html
 <div ng-controller="FormController">
@@ -964,7 +981,7 @@ element to the select.
 {
   type: "actions",
   items: [
-    { type: 'submit', title: 'Ok' }
+    { type: 'submit', title: 'Ok' },
     { type: 'button', title: 'Cancel', onClick: "cancel()" }
   ]
 }
@@ -976,7 +993,7 @@ We can change this with ```style``` attribute:
 {
   type: "actions",
   items: [
-    { type: 'submit', style: 'btn-success', title: 'Ok' }
+    { type: 'submit', style: 'btn-success', title: 'Ok' },
     { type: 'button', style: 'btn-info', title: 'Cancel', onClick: "cancel()" }
   ]
 }
@@ -990,7 +1007,7 @@ the ```sf-schema``` directive.
 
 ```javascript
 [
-  { type: 'submit', title: 'Ok', onClick: function(){ ...  } }
+  { type: 'submit', title: 'Ok', onClick: function(){ ...  } },
   { type: 'button', title: 'Cancel', onClick: "cancel()" }
 [
 ```
@@ -999,7 +1016,7 @@ The submit and other buttons have btn-default as default.
 We can change this with ```style``` attribute:
 ```javascript
 [
-  { type: 'submit', style: 'btn-warning', title: 'Ok', onClick: function(){ ...  } }
+  { type: 'submit', style: 'btn-warning', title: 'Ok', onClick: function(){ ...  } },
   { type: 'button', style: 'btn-danger', title: 'Cancel', onClick: "cancel()" }
 [
 ```
@@ -1044,7 +1061,7 @@ function FormCtrl($scope) {
       type: "radiobuttons",
       titleMap: [
         { value: "one", name: "One" },
-        { value, "two", name: "More..." }
+        { value: "two", name: "More..." }
       ]
     }
   ];
@@ -1245,8 +1262,9 @@ could be changed using attribute `add`, see example below.
 If you like to have drag and drop reordering of arrays you also need
 [ui-sortable](https://github.com/angular-ui/ui-sortable) and its dependencies
 [jQueryUI](http://jqueryui.com/), see *ui-sortable* documentation for details of
-what parts of jQueryUI that is needed. You can safely ignore these if you don't
-need the reordering.
+what parts of jQueryUI that is needed. You can also pass options to the *ui-sortable* directive 
+by including a `sortOptions` key on the form object. Check the *ui-sortable* documentation
+for a complete list of available options. You can safely ignore these if you don't need the reordering.
 
 In the form definition you can refer to properties of an array item by the empty
 bracket notation. In the `key` simply end the name of the array with `[]`
