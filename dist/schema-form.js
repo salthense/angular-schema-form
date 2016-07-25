@@ -2641,7 +2641,6 @@ angular.module('schemaForm')
        .directive('sfSchema',
 ['$compile', '$http', '$templateCache', '$q','schemaForm', 'schemaFormDecorators', 'sfSelect', 'sfPath', 'sfBuilder',
   function($compile, $http, $templateCache, $q, schemaForm,  schemaFormDecorators, sfSelect, sfPath, sfBuilder) {
-
     return {
       scope: {
         schema: '=sfSchema',
@@ -2707,26 +2706,36 @@ angular.module('schemaForm')
           var merged;
 
           var localForm = JSON.parse(localStorage.getItem('form-' + schema.title));
-          var localVersion = localStorage.getItem('form-' + schema.title + '-version') || 0;
+          var localSchemaVersion = localStorage.getItem('form-' + schema.title + '-SchemaVersion') || 0;
+          var localFormVersion = localStorage.getItem('form-' + schema.title + '-FormVersion') || 0;
 
-          var checkForm = function (version) {
-            if (localForm === null || localVersion < version) {
-              return false;
-            } else {
+          var isNotValidSchema = function (version) {
+            if (localSchemaVersion < version) {
               return true;
+            } else {
+              return false;
             }
           };
 
-          scope.options.schemaVersion.then(function (version) {
-            if (!formCache[schema.title]) {
-              if (checkForm(version)) {
-                formCache[schema.title] = localForm;
-              } else {
-                formCache[schema.title] = schemaForm.merge(schema, form, ignore, scope.options, undefined, asyncTemplates);
-                localStorage.setItem('form-' + schema.title, JSON.stringify(formCache[schema.title]));
-                localStorage.setItem('form-' + schema.title + '-version', version);
-              }
+          var isNotValidForm = function (title) {
+            if (scope.options.getFormVersion(title) > localFormVersion) {
+              return true;
+            } else {
+              return false;
             }
+          };
+
+          scope.options.getSchemaVersion().then(function (version) {
+            if (!formCache[schema.title]) {
+              formCache[schema.title] = localForm;
+            }
+            if (isNotValidForm(schema.title) || isNotValidSchema(version)) {
+              formCache[schema.title] = schemaForm.merge(schema, form, ignore, scope.options, undefined, asyncTemplates);
+              localStorage.setItem('form-' + schema.title, JSON.stringify(formCache[schema.title]));
+              localStorage.setItem('form-' + schema.title + '-SchemaVersion', version);
+              localStorage.setItem('form-' + schema.title + '-FormVersion', scope.options.getFormVersion(schema.title));
+            }
+
 
             merged = formCache[schema.title];
 
@@ -2811,7 +2820,6 @@ angular.module('schemaForm')
         //Since we are dependant on up to three
         //attributes we'll do a common watch
         scope.$watch(function() {
-
           var schema = scope.schema;
           var form   = scope.initialForm || defaultForm;
 
