@@ -40,6 +40,7 @@ angular.module('schemaForm').directive('sfMatrix', ['sfSelect', 'sfPath', 'schem
         newMatrixElements.forEach(function(element) {
           scope.matrixElements.push(element);
         });
+        scope.$eval(attrs.sfMatrix + '= matrixElements');
       }
     };
   }]
