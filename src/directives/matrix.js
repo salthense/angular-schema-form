@@ -1,8 +1,19 @@
-angular.module('schemaForm').directive('sfMatrix', ['sfSelect', 'sfPath', 'schemaForm',
-  function(sel, sfPath, schemaForm) {
+angular.module('schemaForm').directive('sfMatrix', ['$rootScope', 'sfSelect', 'sfPath', 'schemaForm',
+  function($rootScope, sel, sfPath, schemaForm) {
     return {
       scope: false,
       link: function(scope, element, attrs, sfSchema) {
+        /* arguments[1] is the scope with model*/
+        $rootScope.$on('modelUpdated', function () {
+          var keys = attrs.sfMatrix.split('[').map(function (key) {
+            return key.replace(']', '').split('\'').join('');
+          });
+          var elm = arguments[1];
+          keys.forEach(function (key) {
+            elm = elm[key];
+          });
+          scope.matrixElements = elm;
+        });
         scope.matrixElements = scope.$eval(attrs.sfMatrix) || [];
         scope.matrixColumns = scope.form.schema.items.properties.column.enum;
         scope.matrixRows = scope.form.schema.items.properties.row.enum;
