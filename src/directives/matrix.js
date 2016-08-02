@@ -2,7 +2,7 @@ angular.module('schemaForm').directive('sfMatrix', ['$rootScope', 'sfSelect', 's
   function($rootScope, sel, sfPath, schemaForm) {
     return {
       scope: false,
-      link: function(scope, element, attrs, sfSchema) {
+      link: function(scope, element, attrs) {
         /* MUST be updated after every $scope.matrixElements update*/
         var $scope = new Proxy(scope, {
           set: function (obj, prop, newVal) {
