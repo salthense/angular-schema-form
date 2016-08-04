@@ -310,6 +310,26 @@ angular.module('schemaForm').provider('sfBuilder', ['sfPathProvider', function(s
         }
       }
     },
+    measurement: function(args) {
+      setTimeout(function() {
+        // focus on first input for data input via measurement gadget
+        $('#measurementModal' + args.form.key.slice(-1)[0]).on('shown.bs.modal', function() {
+          $('#measurementContainer' + args.form.key.slice(-1)[0] + ' input').first().focus();
+        }).on('keyup', function(event) {
+          // focus next input on keypress enter, if on last input close modal
+          if (event.keyCode == 13) {
+            var focusedElement = $(document.activeElement);
+            var inputs = $('#measurementContainer' + args.form.key.slice(-1)[0] + ' input');
+            var index = inputs.index(focusedElement) + 1;
+            if (index < inputs.length) {
+              inputs[index].focus();
+            } else {
+              $('#measurementModal' + args.form.key.slice(-1)[0]).modal('hide');
+            }
+          }
+        });
+      });
+    },
     addon: function(args) {
       if (args.form.addon) {
         var input = args.fieldFrag.querySelector('input');
@@ -1978,6 +1998,25 @@ angular.module('schemaForm').directive('sfChanged', function() {
   };
 });
 
+angular.module('schemaForm').directive('sfExmodule', ['$rootScope', 'sfSelect', 'sfPath', 'schemaForm',
+  function ($rootScope, sel, sfPath, schemaForm) {
+    return {
+      require: '^sfSchema',
+      scope: false,
+      link: {
+        pre: function (scope, element, attrs, sfSchema) {
+          scope.form = sfSchema.lookup['f' + attrs.sfField];
+        },
+        post: function (scope, element, attrs, sfSchema) {
+          scope.clickEvent = function () {
+            window.moduleFunctions[scope.form.exmoduleOptions.moduleName].click(scope);
+          };
+        }
+      }
+    };
+  }]
+);
+
 angular.module('schemaForm').directive('sfField',
     ['$parse', '$compile', '$http', '$templateCache', '$interpolate', '$q', 'sfErrorMessage',
      'sfPath','sfSelect',
@@ -2243,20 +2282,99 @@ angular.module('schemaForm').directive('sfField',
     }
   ]);
 
-angular.module('schemaForm').directive('sfMatrix', ['sfSelect', 'sfPath', 'schemaForm',
-  function(sel, sfPath, schemaForm) {
+angular.module('schemaForm').directive('sfMatrix', ['$rootScope', 'sfSelect', 'sfPath', 'schemaForm',
+  function($rootScope, sel, sfPath, schemaForm) {
     return {
       scope: false,
-      link: function(scope, element, attrs, sfSchema) {
-        scope.matrixElements = scope.$eval(attrs.sfMatrix) || [];
-        scope.matrixColumns = scope.form.schema.items.properties.column.enum;
-        scope.matrixRows = scope.form.schema.items.properties.row.enum;
-        scope.matrixMap = {};
+      link: function(scope, element, attrs) {
+        /* MUST be updated after every $scope.matrixElements update*/
+        var $scope = new Proxy(scope, {
+          set: function (obj, prop, newVal) {
+            switch (prop) {
+              case 'matrixElements':
+                obj[prop] = newVal;
+                $scope.activeIds = 0;
+                $scope.matrixElements.forEach(function (elm, i) {
+                  if (elm.selected) {
+                    $scope.setGroupState(i, elm.selected);
+                  }
+                });
+                break;
+              case 'matrixRows':
+                obj[prop] = flattenRowsGroup(newVal);
+                break;
+              case 'rowGroups':
+                obj[prop] = getGroups(newVal);
+                break;
+              default: obj[prop] = newVal;
+            }
+          }
+        });
+
+        $scope.activeIds = 0;
+
+        /* arguments[1] is the scope with model*/
+        $rootScope.$on('modelUpdated', function () {
+          var keys = attrs.sfMatrix.split('[').map(function (key) {
+            return key.replace(']', '').split('\'').join('');
+          });
+          var elm = arguments[1];
+          keys.forEach(function (key) {
+            elm = elm[key];
+          });
+          $scope.matrixElements = elm;
+        });
+
+        var flattenRowsGroup = function (rows) {
+          var finalRow = [];
+          rows.forEach(function (row) {
+            if (Array.isArray(row)) {
+              finalRow = finalRow.concat(row);
+            } else {
+              finalRow.push(row);
+            }
+          });
+          return finalRow;
+        };
+
+        var getGroups = function (rows) {
+          var counter = -1;
+          return rows.map(
+            function (arr, i) {
+              return {maxIndex: counter += arr.length, group: i + 1};
+            }
+          );
+        };
+        $scope.getGroupForRow = function (index) {
+          return $scope.rowGroups.find(function (group) {
+            return index <= group.maxIndex;
+          });
+        };
+        $scope.rowClass = function (index) {
+          return 'matrix-group-' + $scope.getGroupForRow(index).group;
+        };
+        $scope.setGroupState = function (index, newState) {
+          if (newState === false) {
+            if (--$scope.activeIds === 0) {
+              $scope.activeGroup = -1;
+            }
+          } else {
+            $scope.activeIds++;
+            $scope.activeGroup = $scope.getGroupForRow(index).group;
+          }
+        };
+
+        $scope.activeGroup = -1;
+        $scope.rowGroups = $scope.form.schema.items.properties.row.enum;
+        $scope.matrixElements = $scope.$eval(attrs.sfMatrix) || [];
+        $scope.matrixColumns = $scope.form.schema.items.properties.column.enum;
+        $scope.matrixRows = $scope.form.schema.items.properties.row.enum;
+        $scope.matrixMap = {};
 
         var findElement = function(row, column) {
           var found = null;
 
-          scope.matrixElements.forEach(function(element) {
+          $scope.matrixElements.forEach(function(element) {
             if (element.row == row && element.column == column) {
               found = element;
               return;
@@ -2269,27 +2387,64 @@ angular.module('schemaForm').directive('sfMatrix', ['sfSelect', 'sfPath', 'schem
         var newMatrixElements = [];
         var counter = 0;
 
-        scope.matrixRows.forEach(function(row) {
-          scope.matrixMap[row] = {};
+        $scope.matrixRows.forEach(function(row) {
+          $scope.matrixMap[row] = {};
 
-          scope.matrixColumns.forEach(function(column) {
-            scope.matrixMap[row][column] = counter;
+          $scope.matrixColumns.forEach(function(column) {
+            $scope.matrixMap[row][column] = counter;
             counter++;
 
             newMatrixElements.push(findElement(row, column) || {column: column, row: row, selected: false});
           });
         });
 
-        scope.matrixElements.splice(0, scope.matrixElements.length);
+        $scope.matrixElements.splice(0, $scope.matrixElements.length);
 
         newMatrixElements.forEach(function(element) {
-          scope.matrixElements.push(element);
+          $scope.matrixElements.push(element);
         });
+        $scope.$eval(attrs.sfMatrix + '= matrixElements');
       }
     };
   }]
 );
 
+angular.module('schemaForm').directive('measurements', ['$compile', function($compile) {
+  return {
+    controller: ['$scope', '$rootScope', function($scope, $rootScope) {
+      $scope.calculateValue = function (form) {
+        if (!window.measurementFunctions || !window.measurementFunctions[form.measurementOptions.function]) {
+          return;
+        }
+        window.measurementFunctions[form.measurementOptions.function]($scope, function(value) {
+          // Saving the value should be done here since it's specific to ASF
+          var model = $scope.model;
+          var pointer;
+          form.key.forEach(function(value) {
+            // ascending down the object path
+            if (typeof model[value] === 'object') {
+              model = model[value];
+            } else if (form.key.length == form.key.indexOf(value) + 1) {
+              // desired model-attribute found (last key)
+              pointer = value;
+            } else {
+              // create objectpath to the desired model-attribute
+              model[value] = {};
+              model = model[value];
+            }
+          });
+          model[pointer] = value;
+        });
+      };
+
+      $scope.reset = function(form) {
+        $scope.measurements = [];
+        $('#measurementContainer' + form.key.slice(-1)[0] + ' input')[0].focus();
+        $scope.calculateValue(form);
+      };
+    }]
+  };
+}]);
 angular.module('schemaForm').directive('sfMessage',
 ['$injector', 'sfErrorMessage', function($injector, sfErrorMessage) {
 
@@ -2641,7 +2796,6 @@ angular.module('schemaForm')
        .directive('sfSchema',
 ['$compile', '$http', '$templateCache', '$q','schemaForm', 'schemaFormDecorators', 'sfSelect', 'sfPath', 'sfBuilder',
   function($compile, $http, $templateCache, $q, schemaForm,  schemaFormDecorators, sfSelect, sfPath, sfBuilder) {
-
     return {
       scope: {
         schema: '=sfSchema',
@@ -2706,32 +2860,53 @@ angular.module('schemaForm')
           var asyncTemplates = [];
           var merged;
 
-          if (!formCache[schema.title]) {
-            if (localStorage.getItem('form-' + schema.title)) {
-              formCache[schema.title] = JSON.parse(localStorage.getItem('form-' + schema.title));
+          var localForm = JSON.parse(localStorage.getItem('form-' + schema.title));
+          var localSchemaVersion = localStorage.getItem('form-' + schema.title + '-SchemaVersion') || 0;
+          var localFormVersion = localStorage.getItem('form-' + schema.title + '-FormVersion') || 0;
+
+          var isNotValidSchema = function (version) {
+            if (localSchemaVersion < version) {
+              return true;
             } else {
+              return false;
+            }
+          };
+
+          var isNotValidForm = function (title) {
+            if (scope.options.getFormVersion(title) > localFormVersion) {
+              return true;
+            } else {
+              return false;
+            }
+          };
+
+          scope.options.getSchemaVersion().then(function (version) {
+            if (!formCache[schema.title]) {
+              formCache[schema.title] = localForm;
+            }
+            if (isNotValidForm(schema.title) || isNotValidSchema(version)) {
               formCache[schema.title] = schemaForm.merge(schema, form, ignore, scope.options, undefined, asyncTemplates);
               localStorage.setItem('form-' + schema.title, JSON.stringify(formCache[schema.title]));
+              localStorage.setItem('form-' + schema.title + '-SchemaVersion', version);
+              localStorage.setItem('form-' + schema.title + '-FormVersion', scope.options.getFormVersion(schema.title));
             }
-          }
 
-          merged = formCache[schema.title];
 
-          if (asyncTemplates.length > 0) {
-            // Pre load all async templates and put them on the form for the builder to use.
-            $q.all(asyncTemplates.map(function(form) {
-              return $http.get(form.templateUrl, {cache: $templateCache}).then(function(res) {
-                                  form.template = res.data;
-                                });
-            })).then(function() {
+            merged = formCache[schema.title];
+
+            if (asyncTemplates.length > 0) {
+              // Pre load all async templates and put them on the form for the builder to use.
+              $q.all(asyncTemplates.map(function(form) {
+                return $http.get(form.templateUrl, {cache: $templateCache}).then(function(res) {
+                                    form.template = res.data;
+                                  });
+              })).then(function() {
+                internalRender(schema, form, merged);
+              });
+            } else {
               internalRender(schema, form, merged);
-            });
-
-          } else {
-            internalRender(schema, form, merged);
-          }
-
-
+            }
+          });
         };
 
         var internalRender = function(schema, form, merged) {
@@ -2800,7 +2975,6 @@ angular.module('schemaForm')
         //Since we are dependant on up to three
         //attributes we'll do a common watch
         scope.$watch(function() {
-
           var schema = scope.schema;
           var form   = scope.initialForm || defaultForm;
 
