@@ -310,6 +310,26 @@ angular.module('schemaForm').provider('sfBuilder', ['sfPathProvider', function(s
         }
       }
     },
+    measurement: function(args) {
+      setTimeout(function() {
+        // focus on first input for data input via measurement gadget
+        $('#measurementModal' + args.form.key.slice(-1)[0]).on('shown.bs.modal', function() {
+          $('#measurementContainer' + args.form.key.slice(-1)[0] + ' input').first().focus();
+        }).on('keyup', function(event) {
+          // focus next input on keypress enter, if on last input close modal
+          if (event.keyCode == 13) {
+            var focusedElement = $(document.activeElement);
+            var inputs = $('#measurementContainer' + args.form.key.slice(-1)[0] + ' input');
+            var index = inputs.index(focusedElement) + 1;
+            if (index < inputs.length) {
+              inputs[index].focus();
+            } else {
+              $('#measurementModal' + args.form.key.slice(-1)[0]).modal('hide');
+            }
+          }
+        });
+      });
+    },
     addon: function(args) {
       if (args.form.addon) {
         var input = args.fieldFrag.querySelector('input');
@@ -2389,6 +2409,42 @@ angular.module('schemaForm').directive('sfMatrix', ['$rootScope', 'sfSelect', 's
   }]
 );
 
+angular.module('schemaForm').directive('measurements', ['$compile', function($compile) {
+  return {
+    controller: ['$scope', '$rootScope', function($scope, $rootScope) {
+      $scope.calculateValue = function (form) {
+        if (!window.measurementFunctions || !window.measurementFunctions[form.measurementOptions.function]) {
+          return;
+        }
+        window.measurementFunctions[form.measurementOptions.function]($scope, function(value) {
+          // Saving the value should be done here since it's specific to ASF
+          var model = $scope.model;
+          var pointer;
+          form.key.forEach(function(value) {
+            // ascending down the object path
+            if (typeof model[value] === 'object') {
+              model = model[value];
+            } else if (form.key.length == form.key.indexOf(value) + 1) {
+              // desired model-attribute found (last key)
+              pointer = value;
+            } else {
+              // create objectpath to the desired model-attribute
+              model[value] = {};
+              model = model[value];
+            }
+          });
+          model[pointer] = value;
+        });
+      };
+
+      $scope.reset = function(form) {
+        $scope.measurements = [];
+        $('#measurementContainer' + form.key.slice(-1)[0] + ' input')[0].focus();
+        $scope.calculateValue(form);
+      };
+    }]
+  };
+}]);
 angular.module('schemaForm').directive('sfMessage',
 ['$injector', 'sfErrorMessage', function($injector, sfErrorMessage) {
 
