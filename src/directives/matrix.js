@@ -9,12 +9,11 @@ angular.module('schemaForm').directive('sfMatrix', ['$rootScope', 'sfSelect', 's
             switch (prop) {
               case 'matrixElements':
                 obj[prop] = newVal;
-                $scope.activeIds = 0;
-                $scope.matrixElements.forEach(function (elm, i) {
-                  if (elm.selected) {
-                    $scope.setGroupState(i, elm.selected);
-                  }
+                $scope.activeGroups = [];
+                $scope.form.schema.items.properties.row.enum.forEach(function (val) {
+                  $scope.activeGroups.push(false);
                 });
+                $scope.setGroupState();
                 break;
               case 'matrixRows':
                 obj[prop] = flattenRowsGroup(newVal);
@@ -26,8 +25,6 @@ angular.module('schemaForm').directive('sfMatrix', ['$rootScope', 'sfSelect', 's
             }
           }
         });
-
-        $scope.activeIds = 0;
 
         /* arguments[1] is the scope with model*/
         $rootScope.$on('modelUpdated', function () {
@@ -61,6 +58,21 @@ angular.module('schemaForm').directive('sfMatrix', ['$rootScope', 'sfSelect', 's
             }
           );
         };
+        $scope.isFirstInGroup = function (index) {
+          var group = $scope.getGroupForRow(index).group - 1;
+          var prevGroup = $scope.rowGroups[group - 1];
+          if (index === 0) {
+            return true;
+          } else if (prevGroup !== undefined) {
+            if ($scope.rowGroups[group - 1].maxIndex === index - 1) {
+              return true;
+            } else {
+              return false;
+            }
+          } else {
+            return false;
+          }
+        };
         $scope.getGroupForRow = function (index) {
           return $scope.rowGroups.find(function (group) {
             return index <= group.maxIndex;
@@ -69,18 +81,22 @@ angular.module('schemaForm').directive('sfMatrix', ['$rootScope', 'sfSelect', 's
         $scope.rowClass = function (index) {
           return 'matrix-group-' + $scope.getGroupForRow(index).group;
         };
-        $scope.setGroupState = function (index, newState) {
-          if (newState === false) {
-            if (--$scope.activeIds === 0) {
-              $scope.activeGroup = -1;
+        $scope.setGroupState = function () {
+          $scope.activeGroups = $scope.activeGroups.map(function () { return false; });
+          $scope.matrixElements.forEach(function (elm, index) {
+            var i = Math.floor(index / $scope.matrixColumns.length);
+            if (elm.selected) {
+              $scope.activeGroups[$scope.getGroupForRow(i).group - 1] = true;
             }
-          } else {
-            $scope.activeIds++;
-            $scope.activeGroup = $scope.getGroupForRow(index).group;
+          });
+          var allDisable = $scope.activeGroups.every(function (val) {
+            return val === false;
+          });
+          if (allDisable) {
+            $scope.activeGroups = $scope.activeGroups.map(function () { return true; });
           }
         };
 
-        $scope.activeGroup = -1;
         $scope.rowGroups = $scope.form.schema.items.properties.row.enum;
         $scope.matrixElements = $scope.$eval(attrs.sfMatrix) || [];
         $scope.matrixColumns = $scope.form.schema.items.properties.column.enum;
