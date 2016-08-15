@@ -2382,10 +2382,10 @@ angular.module('schemaForm').directive('sfMatrix', ['$rootScope', 'sfSelect', 's
         };
 
         $scope.rowGroups = $scope.form.schema.items.properties.row.enum;
-        $scope.matrixElements = $scope.$eval(attrs.sfMatrix) || [];
         $scope.matrixColumns = $scope.form.schema.items.properties.column.enum;
         $scope.matrixRows = $scope.form.schema.items.properties.row.enum;
         $scope.matrixMap = {};
+        $scope.matrixElements = $scope.$eval(attrs.sfMatrix) || [];
 
         var findElement = function(row, column) {
           var found = null;
