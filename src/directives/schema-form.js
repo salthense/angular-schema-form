@@ -14,6 +14,7 @@ angular.module('schemaForm')
         schema: '=sfSchema',
         initialForm: '=sfForm',
         model: '=sfModel',
+        depends: '=sfDepends',
         options: '=sfOptions'
       },
       controller: ['$scope', function($scope) {
