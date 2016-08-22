@@ -168,6 +168,19 @@ angular.module('schemaForm').provider('sfBuilder', ['sfPathProvider', function(s
         }
       }
     },
+    link: function (args) {
+      if (args.form.link) {
+        var input = args.fieldFrag.querySelector('input');
+        if (input) {
+          input.setAttribute('uib-typeahead', 'value for value in options.relationTypeahead($viewValue, form.schema.relation, form.schema.link)');
+          input.setAttribute('typeahead-min-length', '0');
+          input.setAttribute('typeahead-on-select', 'setLink($item, $model, $label, $event, $index)');
+          input.setAttribute('typeahead-template-url', 'types/' + args.form.schema.relation + '/typeaheadRepresentation.html');
+        } else {
+          console.warn('could not find input field for typeahead', args.form);
+        }
+      }
+    },
     measurement: function(args) {
       setTimeout(function() {
         // focus on first input for data input via measurement gadget
