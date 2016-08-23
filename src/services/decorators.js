@@ -192,8 +192,29 @@ angular.module('schemaForm').provider('schemaFormDecorators',
 
                 templatePromise.then(function(template) {
                   if (form.key) {
-                    var key = form.key ?
-                              sfPathProvider.stringify(form.key).replace(/"/g, '&quot;') : '';
+                    var revertedArr = form.key.reverse();
+                    var korrektKeys = [];
+                    var $scope = scope;
+                    try {
+                      korrektKeys = revertedArr.map(function (key, i, arr) {
+                        if(key === '') {
+                          var index = $scope.$index;
+                          /* if we have nested ngRepeat directives */
+                          while(!$scope.hasOwnProperty('$index')) {
+                            $scope = $scope.$parent;
+                          }
+                          $scope = $scope.$parent;
+
+                          return index;
+                        } else {
+                          return key;
+                        }
+                      }).reverse();
+                    } catch (e) {
+                      console.error('Wrong path in ngModel! Please check your form!');
+                    }
+                    var key = korrektKeys ?
+                              sfPathProvider.stringify(korrektKeys).replace(/"/g, '&quot;') : '';
                     template = template.replace(
                       /\$\$value\$\$/g,
                       'model' + (key[0] !== '[' ? '.' : '') + key

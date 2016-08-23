@@ -310,6 +310,19 @@ angular.module('schemaForm').provider('sfBuilder', ['sfPathProvider', function(s
         }
       }
     },
+    link: function (args) {
+      if (args.form.link) {
+        var input = args.fieldFrag.querySelector('input');
+        if (input) {
+          input.setAttribute('uib-typeahead', 'value for value in options.relationTypeahead($viewValue, form.schema.relation, form.schema.link)');
+          input.setAttribute('typeahead-min-length', '0');
+          input.setAttribute('typeahead-on-select', 'setLink($item, $model, $label, $event, $index)');
+          input.setAttribute('typeahead-template-url', 'types/' + args.form.schema.relation + '/typeaheadRepresentation.html');
+        } else {
+          console.warn('could not find input field for typeahead', args.form);
+        }
+      }
+    },
     measurement: function(args) {
       setTimeout(function() {
         // focus on first input for data input via measurement gadget
@@ -681,8 +694,29 @@ angular.module('schemaForm').provider('schemaFormDecorators',
 
                 templatePromise.then(function(template) {
                   if (form.key) {
-                    var key = form.key ?
-                              sfPathProvider.stringify(form.key).replace(/"/g, '&quot;') : '';
+                    var revertedArr = form.key.reverse();
+                    var korrektKeys = [];
+                    var $scope = scope;
+                    try {
+                      korrektKeys = revertedArr.map(function (key, i, arr) {
+                        if(key === '') {
+                          var index = $scope.$index;
+                          /* if we have nested ngRepeat directives */
+                          while(!$scope.hasOwnProperty('$index')) {
+                            $scope = $scope.$parent;
+                          }
+                          $scope = $scope.$parent;
+
+                          return index;
+                        } else {
+                          return key;
+                        }
+                      }).reverse();
+                    } catch (e) {
+                      console.error('Wrong path in ngModel! Please check your form!');
+                    }
+                    var key = korrektKeys ?
+                              sfPathProvider.stringify(korrektKeys).replace(/"/g, '&quot;') : '';
                     template = template.replace(
                       /\$\$value\$\$/g,
                       'model' + (key[0] !== '[' ? '.' : '') + key
@@ -2282,6 +2316,53 @@ angular.module('schemaForm').directive('sfField',
     }
   ]);
 
+angular.module('schemaForm').directive('sfLink', ['$rootScope', 'sfSelect', 'sfPath', 'schemaForm',
+  function ($rootScope, sel, sfPath, schemaForm) {
+    var getQuery = function (scope) {
+      return 'model' + scope.form.key.map(function (elm) {
+        if (elm === '') {
+          elm = scope.$index;
+        } else {
+          elm = '\'' + elm + '\'';
+        }
+        return '[' + elm + ']';
+      }).join('');
+    };
+    return {
+      require: ['^sfSchema', '^ngModel'],
+      options: '=sfOptions',
+      scope: false,
+      link: {
+        pre: function (scope, element, attrs, requireArray) {
+          scope.form = requireArray[0].lookup['f' + attrs.sfField];
+          if (scope.evalInScope(getQuery(scope))) {
+            scope.inputValue = scope.evalInScope(getQuery(scope)).title;
+          }
+        },
+        post: function (scope, element, attrs, requireArray) {
+          scope.isValueSet = scope.inputValue !== undefined;
+          scope.change = function () {
+            scope.isValueSet = false;
+            if (scope.inputValue === '') {
+              scope.evalInScope(getQuery(scope) + '=undefined');
+            }
+          };
+          scope.setLink = function ($item, $model, $label, $event, $index) {
+            /* activate save button after click on dropdown */
+            requireArray[1].$setDirty();
+            /* update gloabal model */
+            scope.$item = $item;
+            scope.evalInScope(getQuery(scope) + '=$item');
+            /* update view */
+            scope.inputValue = $item.title;
+            scope.isValueSet = true;
+          };
+        }
+      }
+    };
+  }]
+);
+
 angular.module('schemaForm').directive('sfMatrix', ['$rootScope', 'sfSelect', 'sfPath', 'schemaForm',
   function($rootScope, sel, sfPath, schemaForm) {
     return {
@@ -2801,6 +2882,38 @@ function(sel, sfPath, schemaForm) {
   };
 }]);
 
+angular.module('schemaForm').directive('sfRelation', ['$rootScope', 'sfSelect', 'sfPath', 'schemaForm', '$window', '$location',
+  function ($rootScope, sel, sfPath, schemaForm, $window, $location) {
+    return {
+      require: '^sfSchema',
+      link: {
+        pre: function (scope, element, attrs, sfSchema) {
+          scope.form = sfSchema.lookup['f' + attrs.sfField];
+        },
+        post: function (scope, element, attrs) {
+          if (scope.depends === undefined) {
+            throw new Error('Dependency "depends" doesn\'t found!');
+          }
+          scope.linking = scope.depends(scope.form.relationOptions.schema, scope.form.relationOptions.path);
+          scope.linking.then(function (data) {
+            scope.records = data.records;
+            scope.recordTitle = scope.form.relationOptions.schema;
+          });
+
+          scope.editRecord = function (record) {
+            var breakPoint = '/schemas/';
+            $window.open(
+              $location.absUrl().slice(0, $location.absUrl().indexOf(breakPoint) + breakPoint.length) +
+              record.schema.id +
+              '/edit/' + record.id, '_blank'
+            );
+          };
+        }
+      }
+    };
+  }]
+);
+
 /*
 FIXME: real documentation
 <form sf-form="form"  sf-schema="schema" sf-decorator="foobar"></form>
@@ -2817,6 +2930,7 @@ angular.module('schemaForm')
         schema: '=sfSchema',
         initialForm: '=sfForm',
         model: '=sfModel',
+        depends: '=sfDepends',
         options: '=sfOptions'
       },
       controller: ['$scope', function($scope) {
