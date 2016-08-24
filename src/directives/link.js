@@ -17,12 +17,12 @@ angular.module('schemaForm').directive('sfLink', ['$rootScope', 'sfSelect', 'sfP
       link: {
         pre: function (scope, element, attrs, requireArray) {
           scope.form = requireArray[0].lookup['f' + attrs.sfField];
-          if (scope.evalInScope(getQuery(scope))) {
+          scope.$evalAsync(function () {
             scope.inputValue = scope.evalInScope(getQuery(scope)).title;
-          }
+            scope.isValueSet = scope.inputValue !== undefined;
+          });
         },
         post: function (scope, element, attrs, requireArray) {
-          scope.isValueSet = scope.inputValue !== undefined;
           scope.change = function () {
             scope.isValueSet = false;
             if (scope.inputValue === '') {
