@@ -2335,12 +2335,12 @@ angular.module('schemaForm').directive('sfLink', ['$rootScope', 'sfSelect', 'sfP
       link: {
         pre: function (scope, element, attrs, requireArray) {
           scope.form = requireArray[0].lookup['f' + attrs.sfField];
-          if (scope.evalInScope(getQuery(scope))) {
+          scope.$evalAsync(function () {
             scope.inputValue = scope.evalInScope(getQuery(scope)).title;
-          }
+            scope.isValueSet = scope.inputValue !== undefined;
+          });
         },
         post: function (scope, element, attrs, requireArray) {
-          scope.isValueSet = scope.inputValue !== undefined;
           scope.change = function () {
             scope.isValueSet = false;
             if (scope.inputValue === '') {
@@ -2891,9 +2891,6 @@ angular.module('schemaForm').directive('sfRelation', ['$rootScope', 'sfSelect', 
           scope.form = sfSchema.lookup['f' + attrs.sfField];
         },
         post: function (scope, element, attrs) {
-          if (scope.depends === undefined) {
-            throw new Error('Dependency "depends" doesn\'t found!');
-          }
           scope.linking = scope.depends(scope.form.relationOptions.schema, scope.form.relationOptions.path);
           scope.linking.then(function (data) {
             scope.records = data.records;
