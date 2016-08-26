@@ -18,8 +18,10 @@ angular.module('schemaForm').directive('sfLink', ['$rootScope', 'sfSelect', 'sfP
         pre: function (scope, element, attrs, requireArray) {
           scope.form = requireArray[0].lookup['f' + attrs.sfField];
           scope.$evalAsync(function () {
-            scope.inputValue = scope.evalInScope(getQuery(scope)).title;
-            scope.isValueSet = scope.inputValue !== undefined;
+            if(scope.evalInScope(getQuery(scope)) !== undefined) {
+              scope.inputValue = scope.evalInScope(getQuery(scope)).title;
+              scope.isValueSet = scope.inputValue !== undefined;
+            }
           });
         },
         post: function (scope, element, attrs, requireArray) {
