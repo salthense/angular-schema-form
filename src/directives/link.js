@@ -34,12 +34,17 @@ angular.module('schemaForm').directive('sfLink', ['$rootScope', 'sfSelect', 'sfP
           scope.setLink = function ($item, $model, $label, $event, $index) {
             /* activate save button after click on dropdown */
             requireArray[1].$setDirty();
-            /* update gloabal model */
+            /* update global model */
             scope.$item = $item;
             scope.evalInScope(getQuery(scope) + '=$item');
             /* update view */
             scope.inputValue = $item.title;
             scope.isValueSet = true;
+            if (scope.inputValue !== undefined) {
+              $rootScope.$emit('setLink', 'model' + scope.form.key.map(function (key) {
+                return key === '' ? '[]' : '.' + key;
+              }).join(''));
+            }
           };
         }
       }
