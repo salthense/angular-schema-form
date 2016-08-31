@@ -2735,6 +2735,13 @@ function(sel, sfPath, schemaForm) {
         // Special case: don't do it if form has a titleMap
         if (!form.titleMap && form.startEmpty !== true && (!scope.modelArray || scope.modelArray.length === 0)) {
           scope.appendToArray();
+
+          if (form.elementCount) {
+            // Start with 1, because one element has been added already
+            for (var i = 1; i < form.elementCount; i++) {
+              scope.appendToArray();
+            }
+          }
         }
 
         // If we have "uniqueItems" set to true, we must deep watch for changes.
