@@ -2376,18 +2376,16 @@ angular.module('schemaForm').directive('sfLinkRepresentation', ['$rootScope', 's
       require: '^sfSchema',
       scope: false,
       link: {
-        pre: function (scope, element, attrs, sfSchema) {
-        },
         post: function (scope, element, attrs, sfSchema) {
-          var recordId = function () {
+          var getRecordId = function () {
             return scope.$eval('model.' + scope.form.representationSettings.watchFor + '.id');
           };
           var init = function () {
             var id = parseInt(scope.$eval('model.' + scope.form.representationSettings.watchFor + '.id'), 10);
             /* Function from parent scope in gertrude */
             scope.depends(scope.form.representationSettings.schema, id).then(function (model) {
-              scope.reprDatas = model.data;
-              if (scope.reprDatas) {
+              scope.representationDatas = model.data;
+              if (scope.representationDatas) {
                 scope.$evalAsync(function () {
                   scope.isSet = true;
                 });
@@ -2407,7 +2405,7 @@ angular.module('schemaForm').directive('sfLinkRepresentation', ['$rootScope', 's
             }
           });
           /* init if the record already exists */
-          if (recordId() !== undefined) {
+          if (getRecordId() !== undefined) {
             init();
           }
         }
@@ -2497,7 +2495,7 @@ angular.module('schemaForm').directive('sfMatrix', ['$rootScope', 'sfSelect', 's
           });
         };
         $scope.rowClass = function (index) {
-          return 'matrix-group-' + $scope.getGroupForRow(index).group;
+          return 'matrix-group-' + $scope.getGroupForRow(index).group + ($scope.isFirstInGroup(index) ? ' matrix-group-first':'');
         };
         $scope.setGroupState = function () {
           $scope.activeGroups = $scope.activeGroups.map(function () { return false; });

@@ -79,7 +79,7 @@ angular.module('schemaForm').directive('sfMatrix', ['$rootScope', 'sfSelect', 's
           });
         };
         $scope.rowClass = function (index) {
-          return 'matrix-group-' + $scope.getGroupForRow(index).group;
+          return 'matrix-group-' + $scope.getGroupForRow(index).group + ($scope.isFirstInGroup(index) ? ' matrix-group-first':'');
         };
         $scope.setGroupState = function () {
           $scope.activeGroups = $scope.activeGroups.map(function () { return false; });
