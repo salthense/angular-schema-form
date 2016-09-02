@@ -25,6 +25,15 @@ angular.module('schemaForm').directive('sfLink', ['$rootScope', 'sfSelect', 'sfP
           });
         },
         post: function (scope, element, attrs, requireArray) {
+          /*
+           *  view update after new model was set
+           */
+          scope.$watch(getQuery(scope), function (newVal, oldVal) {
+            if (newVal !== oldVal) {
+              scope.inputValue = newVal.title;
+            }
+          }, true);
+
           scope.change = function () {
             scope.isValueSet = false;
             if (scope.inputValue === '') {
