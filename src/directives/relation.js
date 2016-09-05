@@ -5,6 +5,7 @@ angular.module('schemaForm').directive('sfRelation', ['$rootScope', 'sfSelect', 
       link: {
         pre: function (scope, element, attrs, sfSchema) {
           scope.form = sfSchema.lookup['f' + attrs.sfField];
+          scope.relations = [];
         },
         post: function (scope, element, attrs) {
           /* depends is a function in a parent direktive in gertrude,
@@ -15,6 +16,49 @@ angular.module('schemaForm').directive('sfRelation', ['$rootScope', 'sfSelect', 
             if (data !== null) {
               scope.records = data.records;
               scope.recordTitle = scope.form.relationOptions.schema;
+              /* get path to the related field */
+              var keys = scope.form.relationOptions.path.split('/').map(function (elm, i, arr) {
+                return elm.replace('[]', '');
+              }).filter(function (elm, i, arr) {
+                return elm !== '';
+              });
+              /* function to fill ids(array) with related record-ids */
+              var recursiveIdSearch = function (ids, obj, keys) {
+                if (keys.length > 1) {
+                  var nextObj = obj[keys.splice(0, 1)[0]];
+                  if (Array.isArray(nextObj)) {
+                    /* array */
+                    nextObj.forEach(function (elm, i, arr) {
+                      recursiveIdSearch(ids, elm, angular.copy(keys));
+                    });
+                  } else {
+                    recursiveIdSearch(ids, nextObj, keys);
+                  }
+                } else {
+                  ids.push(obj[keys[0]]);
+                }
+              };
+              scope.records.forEach(function (record, index) {
+                var relationsIds = [];
+                var promisesArray = [];
+                recursiveIdSearch(relationsIds, record.data, angular.copy(keys));
+                /* get related records from server */
+                relationsIds.forEach(function (id) {
+                  promisesArray.push(scope.depends(scope.form.relationOptions.schema, id));
+                });
+                Promise.all(promisesArray).then(function (allRelations) {
+                  if (allRelations.length > 0) {
+                    /* linkedSchemaTitle is used for getting the html-template */
+                    if (scope.linkedSchemaTitle === undefined) {
+                      /* depends with 1 parameter returns a schema title */
+                      scope.depends(allRelations[0].schema.id).then(function (title) {
+                        scope.linkedSchemaTitle = title;
+                      });
+                    }
+                    scope.relations[index] = allRelations;
+                  }
+                });
+              });
             }
           });
 
