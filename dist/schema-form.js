@@ -2452,7 +2452,7 @@ angular.module('schemaForm').directive('sfMatrix', ['$rootScope', 'sfSelect', 's
         });
 
         /* arguments[1] is the scope with model*/
-        $rootScope.$on('modelUpdated', function () {
+        var unregisterModelUpdate = $rootScope.$on('modelUpdated', function () {
           var keys = attrs.sfMatrix.split('[').map(function (key) {
             return key.replace(']', '').split('\'').join('');
           });
@@ -2461,6 +2461,10 @@ angular.module('schemaForm').directive('sfMatrix', ['$rootScope', 'sfSelect', 's
             elm = elm[key];
           });
           $scope.matrixElements = elm;
+        });
+
+        $scope.$on('$destroy', function () {
+          unregisterModelUpdate();
         });
 
         var flattenRowsGroup = function (rows) {
