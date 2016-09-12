@@ -54,6 +54,11 @@ function(sel, sfPath, schemaForm) {
           return;
         }
 
+        // It is possible that the model was not completely loaded when the link
+        // function of this directive ran. Just to be sure we try to get the
+        // array again from the model.
+        scope.modelArray = scope.$eval(attrs.sfNewArray);
+
         // Always start with one empty form unless configured otherwise.
         // Special case: don't do it if form has a titleMap
         if (!form.titleMap && form.startEmpty !== true && (!scope.modelArray || scope.modelArray.length === 0)) {
