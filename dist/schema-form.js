@@ -2587,11 +2587,10 @@ angular.module('schemaForm').directive('measurements', ['$compile', function($co
 
       $scope.getLabel = function(titleSchema, index) {
         var label = index + 1;
-        if (!titleSchema) {
+        if (!titleSchema || titleSchema.length < 1) {
           return label;
         }
-        var titleArr = titleSchema.split(',');
-        return label + ' (' + titleArr[index % titleArr.length] + ')';
+        return label + ' (' + titleSchema[index % titleSchema.length] + ')';
       }
 
       $scope.reset = function(form) {
