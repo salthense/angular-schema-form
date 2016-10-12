@@ -2759,6 +2759,13 @@ function(sel, sfPath, schemaForm) {
         // array again from the model.
         scope.modelArray = scope.$eval(attrs.sfNewArray);
 
+        /* if array already has been saved, it is possible that the length doesn't match the elementCount */
+        if(scope.modelArray && form.elementCount && scope.modelArray.length < form.elementCount) {
+          while(scope.modelArray.length < form.elementCount) {
+            scope.appendToArray();
+          }
+        }
+
         // Always start with one empty form unless configured otherwise.
         // Special case: don't do it if form has a titleMap
         if (!form.titleMap && form.startEmpty !== true && (!scope.modelArray || scope.modelArray.length === 0)) {
