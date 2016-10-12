@@ -2594,10 +2594,9 @@ angular.module('schemaForm').directive('measurements', ['$compile', function($co
       }
 
       $scope.reset = function(form) {
-        msValues = $('.measurementValue');
-        msValues.each(function(index) {
-          msValues[index].value = null;
-        });
+        for (var key in $scope.modelArray) {
+          delete $scope.modelArray[key].messwert;
+        }
         $('#measurementContainer' + form.key.slice(-1)[0] + ' input')[0].focus();
       };
     }]
