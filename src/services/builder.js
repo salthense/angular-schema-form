@@ -183,7 +183,7 @@ angular.module('schemaForm').provider('sfBuilder', ['sfPathProvider', function(s
       if (args.form.link) {
         var input = args.fieldFrag.querySelector('input');
         if (input) {
-          input.setAttribute('uib-typeahead', 'value for value in options.relationTypeahead($viewValue, form.schema.relation, form.schema.link)');
+          input.setAttribute('uib-typeahead', 'value for value in options.relationTypeahead($viewValue, form.schema.relation, form.schema.link, form.schema.filters)');
           input.setAttribute('typeahead-min-length', '0');
           input.setAttribute('typeahead-on-select', 'setLink($item, $model, $label, $event, $index)');
           input.setAttribute('typeahead-template-url', 'types/' + args.form.schema.relation + '/typeaheadRepresentation.html');
