@@ -14,7 +14,7 @@ angular.module('schemaForm').directive('measurements', ['$compile', function($co
         for (var key in $scope.modelArray) {
           delete $scope.modelArray[key].messwert;
         }
-        $('#measurementContainer' + form.key.slice(-1)[0] + ' input')[0].focus();
+        $('#measurementContainer' + form.key.join('') + ' input')[0].focus();
       };
     }]
   };
