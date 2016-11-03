@@ -337,18 +337,18 @@ angular.module('schemaForm').provider('sfBuilder', ['sfPathProvider', function(s
     measurement: function(args) {
       setTimeout(function() {
         // focus on first input for data input via measurement gadget
-        $('#measurementModal' + args.form.key.slice(-1)[0]).on('shown.bs.modal', function() {
-          $('#measurementContainer' + args.form.key.slice(-1)[0] + ' input').first().focus();
+        $('#measurementModal' + args.form.key.join('')).on('shown.bs.modal', function() {
+          $('#measurementContainer' + args.form.key.join('') + ' input').first().focus();
         }).on('keyup', function(event) {
           // focus next input on keypress enter, if on last input close modal
           if (event.keyCode == 13) {
             var focusedElement = $(document.activeElement);
-            var inputs = $('#measurementContainer' + args.form.key.slice(-1)[0] + ' input');
+            var inputs = $('#measurementContainer' + args.form.key.join('') + ' input');
             var index = inputs.index(focusedElement) + 1;
             if (index < inputs.length) {
               inputs[index].focus();
             } else {
-              $('#measurementModal' + args.form.key.slice(-1)[0]).modal('hide');
+              $('#measurementModal' + args.form.key.join('')).modal('hide');
             }
           }
         });
@@ -2597,7 +2597,7 @@ angular.module('schemaForm').directive('measurements', ['$compile', function($co
         for (var key in $scope.modelArray) {
           delete $scope.modelArray[key].messwert;
         }
-        $('#measurementContainer' + form.key.slice(-1)[0] + ' input')[0].focus();
+        $('#measurementContainer' + form.key.join('') + ' input')[0].focus();
       };
     }]
   };
