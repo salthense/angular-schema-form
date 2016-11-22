@@ -192,7 +192,7 @@ angular.module('schemaForm').provider('schemaFormDecorators',
 
                 templatePromise.then(function(template) {
                   if (form.key) {
-                    var revertedArr = form.key.reverse();
+                    var revertedArr = angular.copy(form.key).reverse();
                     var korrektKeys = [];
                     var $scope = scope;
                     try {
