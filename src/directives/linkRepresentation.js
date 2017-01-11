@@ -24,7 +24,7 @@ angular.module('schemaForm').directive('sfLinkRepresentation', ['$rootScope', 's
           scope.recordTitle = scope.form.representationSettings.schema;
           scope.template = scope.form.representationSettings.path;
           /*link directive will trigger this event by linking a new data */
-          $rootScope.$on('setLink', function ($scope, key) {
+          var deregisterSetLink = $rootScope.$on('setLink', function ($scope, key) {
             if(key === ('model.' + scope.form.representationSettings.watchFor)) {
               scope.isSet = false;
               scope.$evalAsync(function () {
@@ -36,6 +36,10 @@ angular.module('schemaForm').directive('sfLinkRepresentation', ['$rootScope', 's
           if (getRecordId() !== undefined) {
             init();
           }
+
+          element.on('$destroy', function() {
+            deregisterSetLink();
+          })
         }
       }
     };
