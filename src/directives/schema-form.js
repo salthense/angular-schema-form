@@ -105,7 +105,6 @@ angular.module('schemaForm')
               localStorage.setItem('form-' + schema.title + '-FormVersion', scope.options.getFormVersion(schema.title));
             }
 
-
             merged = formCache[schema.title];
 
             if (asyncTemplates.length > 0) {

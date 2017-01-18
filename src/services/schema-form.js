@@ -374,6 +374,16 @@ angular.module('schemaForm').provider('schemaForm',
           obj.items = service.merge(schema, obj.items, ignore, options, obj.readonly, asyncTemplates);
         }
 
+        //if it's a type with rows, merge 'em!
+        if (obj.rows) {
+          obj.rows = service.merge(schema, obj.rows, ignore, options, obj.readonly, asyncTemplates);
+        }
+
+        //if it's a type with cols, merge 'em!
+        if (obj.cols) {
+          obj.cols = service.merge(schema, obj.cols, ignore, options, obj.readonly, asyncTemplates);
+        }
+
         //if its has tabs, merge them also!
         if (obj.tabs) {
           angular.forEach(obj.tabs, function(tab) {
