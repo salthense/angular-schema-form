@@ -34,6 +34,22 @@ angular.module('schemaForm').directive('sfLink', ['$rootScope', 'sfSelect', 'sfP
             }
           }, true);
 
+          var unregisterModelUpdate = $rootScope.$on('modelUpdated', function () {
+            // try to set new title
+            try {
+              scope.inputValue = scope.evalInScope(getQuery(scope)).title;
+            } catch(e) {
+              scope.inputValue = null;
+            }
+          });
+
+          scope.$on('$destroy', function () {
+            unregisterModelUpdate();
+          });
+
+
+
+
           scope.change = function () {
             scope.isValueSet = false;
             if (scope.inputValue === '') {
