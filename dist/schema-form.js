@@ -3073,6 +3073,9 @@ angular.module('schemaForm').directive('sfRelation', ['$rootScope', 'sfSelect', 
                     }
                   });
                 });
+              } else {
+                scope.relations = [];
+                scope.records = null;
               }
             });
           };
