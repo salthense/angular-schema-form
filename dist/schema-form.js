@@ -2370,6 +2370,7 @@ angular.module('schemaForm').directive('sfLink', ['$rootScope', 'sfSelect', 'sfP
           });
         },
         post: function (scope, element, attrs, requireArray) {
+          var schemaId = scope.schema.id;
           /*
            *  view update after new model was set
            */
@@ -2379,8 +2380,12 @@ angular.module('schemaForm').directive('sfLink', ['$rootScope', 'sfSelect', 'sfP
             }
           }, true);
 
+          /* arguments[1] is the scope with model*/
           var unregisterModelUpdate = $rootScope.$on('modelUpdated', function () {
             // try to set new title
+            if(schemaId !== arguments[1].schema.id) {
+              return;
+            }
             try {
               scope.inputValue = scope.evalInScope(getQuery(scope)).title;
             } catch(e) {
@@ -2498,8 +2503,13 @@ angular.module('schemaForm').directive('sfMatrix', ['$rootScope', 'sfSelect', 's
           }
         });
 
-        /* arguments[1] is the scope with model*/
+        var schemaId = scope.schema.id;
+
         var unregisterModelUpdate = $rootScope.$on('modelUpdated', function () {
+          /* arguments[1] is the scope with model*/
+          if (schemaId !== arguments[1].schema.id) {
+            return;
+          }
           updateFn();
           var keys = attrs.sfMatrix.split('[').map(function (key) {
             return key.replace(']', '').split('\'').join('');
@@ -3046,6 +3056,7 @@ angular.module('schemaForm').directive('sfRelation', ['$rootScope', 'sfSelect', 
           /* depends is a function in a parent direktive in gertrude,
            * allows to get record which are related to chosen record
            */
+          var schemaId = scope.schema.id;
           var init = function () {
             scope.linking = scope.depends(scope.form.relationOptions.schema, scope.form.relationOptions.path);
             scope.linking.then(function (data) {
@@ -3114,6 +3125,10 @@ angular.module('schemaForm').directive('sfRelation', ['$rootScope', 'sfSelect', 
 
           /* arguments[1] is the scope with model*/
           var unregisterModelUpdate = $rootScope.$on('modelUpdated', function () {
+            /* arguments[1] is the scope with model*/
+            if (schemaId !== arguments[1].schema.id) {
+              return;
+            }
             init();
           });
 

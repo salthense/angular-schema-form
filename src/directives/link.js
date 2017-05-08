@@ -25,6 +25,7 @@ angular.module('schemaForm').directive('sfLink', ['$rootScope', 'sfSelect', 'sfP
           });
         },
         post: function (scope, element, attrs, requireArray) {
+          var schemaId = scope.schema.id;
           /*
            *  view update after new model was set
            */
@@ -34,8 +35,12 @@ angular.module('schemaForm').directive('sfLink', ['$rootScope', 'sfSelect', 'sfP
             }
           }, true);
 
+          /* arguments[1] is the scope with model*/
           var unregisterModelUpdate = $rootScope.$on('modelUpdated', function () {
             // try to set new title
+            if(schemaId !== arguments[1].schema.id) {
+              return;
+            }
             try {
               scope.inputValue = scope.evalInScope(getQuery(scope)).title;
             } catch(e) {
