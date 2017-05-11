@@ -2380,10 +2380,9 @@ angular.module('schemaForm').directive('sfLink', ['$rootScope', 'sfSelect', 'sfP
             }
           }, true);
 
-          /* arguments[1] is the scope with model*/
-          var unregisterModelUpdate = $rootScope.$on('modelUpdated', function () {
+          var unregisterModelUpdate = $rootScope.$on('modelUpdated', function (event, externalScope) {
             // try to set new title
-            if(schemaId !== arguments[1].schema.id) {
+            if(schemaId !== externalScope.schema.id) {
               return;
             }
             try {
@@ -2505,16 +2504,15 @@ angular.module('schemaForm').directive('sfMatrix', ['$rootScope', 'sfSelect', 's
 
         var schemaId = scope.schema.id;
 
-        var unregisterModelUpdate = $rootScope.$on('modelUpdated', function () {
-          /* arguments[1] is the scope with model*/
-          if (schemaId !== arguments[1].schema.id) {
+        var unregisterModelUpdate = $rootScope.$on('modelUpdated', function (event, externalScope) {
+          if (schemaId !== externalScope.schema.id) {
             return;
           }
           updateFn();
           var keys = attrs.sfMatrix.split('[').map(function (key) {
             return key.replace(']', '').split('\'').join('');
           });
-          var elm = arguments[1];
+          var elm = externalScope;
           keys.forEach(function (key) {
             elm = elm[key];
           });
@@ -3123,10 +3121,8 @@ angular.module('schemaForm').directive('sfRelation', ['$rootScope', 'sfSelect', 
             );
           };
 
-          /* arguments[1] is the scope with model*/
-          var unregisterModelUpdate = $rootScope.$on('modelUpdated', function () {
-            /* arguments[1] is the scope with model*/
-            if (schemaId !== arguments[1].schema.id) {
+          var unregisterModelUpdate = $rootScope.$on('modelUpdated', function (event, externalScope) {
+            if (schemaId !== externalScope.schema.id) {
               return;
             }
             init();

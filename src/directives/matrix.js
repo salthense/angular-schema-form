@@ -28,16 +28,15 @@ angular.module('schemaForm').directive('sfMatrix', ['$rootScope', 'sfSelect', 's
 
         var schemaId = scope.schema.id;
 
-        var unregisterModelUpdate = $rootScope.$on('modelUpdated', function () {
-          /* arguments[1] is the scope with model*/
-          if (schemaId !== arguments[1].schema.id) {
+        var unregisterModelUpdate = $rootScope.$on('modelUpdated', function (event, externalScope) {
+          if (schemaId !== externalScope.schema.id) {
             return;
           }
           updateFn();
           var keys = attrs.sfMatrix.split('[').map(function (key) {
             return key.replace(']', '').split('\'').join('');
           });
-          var elm = arguments[1];
+          var elm = externalScope;
           keys.forEach(function (key) {
             elm = elm[key];
           });

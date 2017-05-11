@@ -35,10 +35,9 @@ angular.module('schemaForm').directive('sfLink', ['$rootScope', 'sfSelect', 'sfP
             }
           }, true);
 
-          /* arguments[1] is the scope with model*/
-          var unregisterModelUpdate = $rootScope.$on('modelUpdated', function () {
+          var unregisterModelUpdate = $rootScope.$on('modelUpdated', function (event, externalScope) {
             // try to set new title
-            if(schemaId !== arguments[1].schema.id) {
+            if(schemaId !== externalScope.schema.id) {
               return;
             }
             try {

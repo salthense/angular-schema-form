@@ -78,10 +78,8 @@ angular.module('schemaForm').directive('sfRelation', ['$rootScope', 'sfSelect', 
             );
           };
 
-          /* arguments[1] is the scope with model*/
-          var unregisterModelUpdate = $rootScope.$on('modelUpdated', function () {
-            /* arguments[1] is the scope with model*/
-            if (schemaId !== arguments[1].schema.id) {
+          var unregisterModelUpdate = $rootScope.$on('modelUpdated', function (event, externalScope) {
+            if (schemaId !== externalScope.schema.id) {
               return;
             }
             init();
