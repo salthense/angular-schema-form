@@ -14,6 +14,7 @@ angular.module('schemaForm')
         schema: '=sfSchema',
         initialForm: '=sfForm',
         model: '=sfModel',
+        record: '=sfRecord',
         depends: '=sfDepends',
         options: '=sfOptions'
       },
