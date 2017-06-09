@@ -162,7 +162,6 @@ angular.module('schemaForm').provider('sfBuilder', ['sfPathProvider', function(s
         var input = args.fieldFrag.querySelector('input')
         if (input) {
           input.setAttribute('uib-typeahead', 'value for value in options.typeahead(schema, form, $viewValue)');
-          input.setAttribute("typeahead-min-length", "0");
         } else {
           console.warn('could not find input field for typeahead', args.form);
         }
@@ -173,7 +172,6 @@ angular.module('schemaForm').provider('sfBuilder', ['sfPathProvider', function(s
         var input = args.fieldFrag.querySelector('input');
         if (input) {
           input.setAttribute('uib-typeahead', 'value for value in options.userTypeahead($viewValue, form.group, form.fields)');
-          input.setAttribute('typeahead-min-length', '0');
         } else {
           console.warn('could not find input field for typeahead', args.form);
         }
@@ -184,7 +182,6 @@ angular.module('schemaForm').provider('sfBuilder', ['sfPathProvider', function(s
         var input = args.fieldFrag.querySelector('input');
         if (input) {
           input.setAttribute('uib-typeahead', 'value for value in options.relationTypeahead($viewValue, form.schema.relation, form.schema.link, form.schema.filters)');
-          input.setAttribute('typeahead-min-length', '0');
           input.setAttribute('typeahead-on-select', 'setLink($item, $model, $label, $event, $index)');
           input.setAttribute('typeahead-template-url', 'types/' + args.form.schema.relation + '/typeaheadRepresentation.html');
         } else {
