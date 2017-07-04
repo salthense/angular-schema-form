@@ -107,8 +107,7 @@ angular.module('schemaForm').directive('schemaValidate', ['sfValidator', '$parse
 
         // A bit ugly but useful.
         scope.validateField =  function(formName) {
-          
-          // If we have specified a form name, and this model is not within 
+          // If we have specified a form name, and this model is not within
           // that form, then leave things be.
           if(formName != undefined && ngModel.$$parentForm.$name !== formName) {
             return;
@@ -129,16 +128,17 @@ angular.module('schemaForm').directive('schemaValidate', ['sfValidator', '$parse
           if (ngModel.$setDirty) {
 
             // Angular 1.3+
-            ngModel.$setDirty();
-            ngModel.$setViewValue(ngModel.$viewValue);
-            ngModel.$commitViewValue();
+            scope.$evalAsync(function () {
 
-            // In Angular 1.3 setting undefined as a viewValue does not trigger parsers
-            // so we need to do a special required check. Fortunately we have $isEmpty
-            if (form.required && ngModel.$isEmpty(ngModel.$modelValue)) {
-              ngModel.$setValidity('tv4-302', false);
-            }
-
+              ngModel.$setDirty();
+              ngModel.$setViewValue(ngModel.$viewValue);
+              ngModel.$commitViewValue();
+              // In Angular 1.3 setting undefined as a viewValue does not trigger parsers
+              // so we need to do a special required check. Fortunately we have $isEmpty
+              if (form.required && ngModel.$isEmpty(ngModel.$modelValue)) {
+                ngModel.$setValidity('tv4-302', false);
+              }
+            });
           } else {
             // Angular 1.2
             // In angular 1.2 setting a viewValue of undefined will trigger the parser.
